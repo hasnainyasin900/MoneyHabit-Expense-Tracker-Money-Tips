@@ -1,0 +1,7 @@
+{
+  "name": "Rozana Paisa Prototype",
+  "description": "A comprehensive personal finance management tool for the Pakistani market, featuring AI-driven insights, daily money tips in multiple languages, and robust expense tracking.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
