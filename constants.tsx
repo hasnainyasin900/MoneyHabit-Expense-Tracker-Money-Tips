@@ -33,7 +33,11 @@ export const TRANSLATIONS: any = {
     ai: 'AI Insights',
     addEntry: 'Add New Entry',
     save: 'Save Entry',
-    currency: '$'
+    currency: '',
+    settings: 'Settings',
+    language: 'Language',
+    chooseLanguage: 'Choose your language',
+    profile: 'Profile'
   },
   pk: {
     welcome: 'Khush Amdeed',
@@ -47,7 +51,11 @@ export const TRANSLATIONS: any = {
     ai: 'AI Mashwara',
     addEntry: 'Nayi Entry',
     save: 'Mehfooz Karen',
-    currency: 'Rs.'
+    currency: 'Rs.',
+    settings: 'Settings',
+    language: 'Zuban',
+    chooseLanguage: 'Apni zuban chunain',
+    profile: 'Profile'
   }
 };
 
