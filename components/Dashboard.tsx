@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Transaction, TransactionType, AppLanguage } from '../types';
 import { CATEGORIES, TRANSLATIONS } from '../constants';
@@ -112,7 +111,7 @@ const Dashboard: React.FC<DashboardProps> = ({ transactions, onAddTransaction, l
                       style={{ backgroundColor: `${catInfo.color}10`, color: catInfo.color }}
                     >
                       {catInfo.icon}
-                      <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[8px] border-2 border-white dark:border-slate-900 text-white ${t.type === TransactionType.INCOME ? 'bg-emerald-500' : 'bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.4)]'}`}>
+                      <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[10px] border-2 border-white dark:border-slate-900 text-white ${t.type === TransactionType.INCOME ? 'bg-emerald-500 shadow-lg shadow-emerald-500/40' : 'bg-red-600 shadow-lg shadow-red-600/40'}`}>
                         <i className={`fas ${t.type === TransactionType.INCOME ? 'fa-plus' : 'fa-minus'}`}></i>
                       </div>
                     </div>

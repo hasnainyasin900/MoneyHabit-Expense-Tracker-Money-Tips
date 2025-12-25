@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Transaction, TransactionType, Filters } from '../types';
 import { CATEGORIES, TRANSLATIONS } from '../constants';
@@ -49,6 +48,13 @@ const History: React.FC<HistoryProps> = ({ transactions, locale, onEdit, onDelet
 
   const handleTransactionClick = (t: Transaction) => {
     setSelectedTx(t);
+  };
+
+  const handleConfirmDelete = (id: string) => {
+    if (window.confirm('Delete this transaction permanently? This cannot be undone.')) {
+      onDelete(id);
+      setSelectedTx(null);
+    }
   };
 
   const activeFiltersCount = (filters.type !== 'ALL' ? 1 : 0) + 
@@ -151,7 +157,7 @@ const History: React.FC<HistoryProps> = ({ transactions, locale, onEdit, onDelet
                   t.type === TransactionType.INCOME ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-50 dark:bg-rose-950/30 text-rose-600'
                 }`}>
                   {CATEGORIES[t.type].find(c => c.name === t.category)?.icon || <i className="fas fa-tag"></i>}
-                  <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[8px] border-2 border-white dark:border-slate-900 text-white ${t.type === TransactionType.INCOME ? 'bg-emerald-500' : 'bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.3)]'}`}>
+                  <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[10px] border-2 border-white dark:border-slate-900 text-white ${t.type === TransactionType.INCOME ? 'bg-emerald-500 shadow-md shadow-emerald-500/30' : 'bg-red-600 shadow-md shadow-red-600/30'}`}>
                     <i className={`fas ${t.type === TransactionType.INCOME ? 'fa-plus' : 'fa-minus'}`}></i>
                   </div>
                 </div>
@@ -180,9 +186,9 @@ const History: React.FC<HistoryProps> = ({ transactions, locale, onEdit, onDelet
                 <i className="fas fa-times"></i>
               </button>
               <div className="flex items-center space-x-4 mb-4">
-                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-2xl relative">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl relative">
                   {CATEGORIES[selectedTx.type].find(c => c.name === selectedTx.category)?.icon || <i className="fas fa-tag"></i>}
-                  <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-[10px] border-2 border-white text-white ${selectedTx.type === TransactionType.INCOME ? 'bg-emerald-500' : 'bg-red-600'}`}>
+                  <div className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center text-[12px] border-[3px] border-white text-white ${selectedTx.type === TransactionType.INCOME ? 'bg-emerald-500 shadow-xl' : 'bg-red-600 shadow-xl'}`}>
                     <i className={`fas ${selectedTx.type === TransactionType.INCOME ? 'fa-plus' : 'fa-minus'}`}></i>
                   </div>
                 </div>
@@ -234,12 +240,7 @@ const History: React.FC<HistoryProps> = ({ transactions, locale, onEdit, onDelet
                   <span>Edit</span>
                 </button>
                 <button 
-                  onClick={() => {
-                    if (window.confirm('Delete this transaction permanently? This cannot be undone.')) {
-                      onDelete(selectedTx.id);
-                      setSelectedTx(null);
-                    }
-                  }}
+                  onClick={() => handleConfirmDelete(selectedTx.id)}
                   className="flex items-center justify-center space-x-2 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95"
                 >
                   <i className="fas fa-trash"></i>

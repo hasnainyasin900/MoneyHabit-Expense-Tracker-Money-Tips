@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { Transaction, TransactionType, AppLanguage } from '../types';
@@ -32,10 +31,26 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
     }, [])
     .sort((a, b) => b.value - a.value);
 
+  const incomeData = transactions
+    .filter(t => t.type === TransactionType.INCOME)
+    .reduce((acc: any[], t) => {
+      const existing = acc.find(item => item.name === t.category);
+      if (existing) {
+        existing.value += t.amount;
+      } else {
+        const catInfo = CATEGORIES.INCOME.find(c => c.name === t.category);
+        acc.push({ name: t.category, value: t.amount, color: catInfo?.color || '#10b981' });
+      }
+      return acc;
+    }, [])
+    .sort((a, b) => b.value - a.value);
+
   const totalExpense = expenseData.reduce((sum, item) => sum + item.value, 0);
+  const totalIncome = incomeData.reduce((sum, item) => sum + item.value, 0);
 
   const handleExport = () => {
     setIsExporting(true);
+    // Short delay to ensure any UI state updates (like hiding buttons) are processed
     setTimeout(() => {
       window.print();
       setIsExporting(false);
@@ -60,7 +75,7 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
   }, []).slice(-6);
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 print:p-0">
+    <div className="space-y-10 animate-in fade-in duration-700 print:p-0 print:m-0">
       <div className="flex justify-between items-center mb-4 no-print px-2">
         <div>
           <h2 className="text-4xl font-black text-gray-800 dark:text-slate-100 tracking-tighter uppercase italic">{strings.reports}</h2>
@@ -88,24 +103,25 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-sm border border-gray-50 dark:border-slate-800 flex flex-col">
+        {/* Expense Flow Section */}
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-sm border border-gray-50 dark:border-slate-800 flex flex-col min-h-[450px]">
           <h3 className="text-lg font-black text-gray-800 dark:text-slate-200 mb-6 uppercase tracking-widest flex items-center italic">
             <span className="w-2 h-2 bg-rose-500 rounded-full mr-3 animate-pulse"></span>
             Expense Flow
           </h3>
-          <div className="flex-1 w-full min-h-[220px] relative">
+          <div className="flex-1 w-full min-h-[220px] h-[220px]">
             {isMounted && expenseData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={220}>
                 <PieChart>
                   <Pie
                     data={expenseData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
-                    outerRadius={90}
+                    outerRadius={85}
                     paddingAngle={8}
                     dataKey="value"
-                    animationDuration={1000}
+                    animationDuration={800}
                   >
                     {expenseData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
@@ -122,7 +138,6 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
             )}
           </div>
           
-          {/* Detailed Expense Table below chart */}
           {expenseData.length > 0 && (
             <div className="mt-8 space-y-3">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-slate-800 pb-2">Category Breakdown</p>
@@ -136,7 +151,7 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
                     <div className="text-right">
                       <p className="text-xs font-black text-gray-800 dark:text-slate-200">{strings.currency}{item.value.toLocaleString()}</p>
                       <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">
-                        {((item.value / totalExpense) * 100).toFixed(1)}%
+                        {((item.value / (totalExpense || 1)) * 100).toFixed(1)}%
                       </p>
                     </div>
                   </div>
@@ -146,14 +161,15 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
           )}
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-sm border border-gray-50 dark:border-slate-800 flex flex-col">
+        {/* Wealth Trend Section */}
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-sm border border-gray-50 dark:border-slate-800 flex flex-col min-h-[450px]">
           <h3 className="text-lg font-black text-gray-800 dark:text-slate-200 mb-6 uppercase tracking-widest flex items-center italic">
              <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3 animate-pulse"></span>
              Wealth Trend
           </h3>
-          <div className="flex-1 w-full min-h-[220px] relative">
+          <div className="flex-1 w-full min-h-[220px] h-[220px]">
             {isMounted && monthlyData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minHeight={220}>
                 <BarChart data={monthlyData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
                   <XAxis 
                     dataKey="month" 
@@ -167,8 +183,8 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
                     contentStyle={{ borderRadius: '20px', border: 'none', fontWeight: '900', background: '#1e293b', color: '#fff' }} 
                     itemStyle={{ color: '#fff' }}
                   />
-                  <Bar dataKey="income" fill="#10b981" radius={[8, 8, 0, 0]} barSize={20} />
-                  <Bar dataKey="expense" fill="#f43f5e" radius={[8, 8, 0, 0]} barSize={20} />
+                  <Bar dataKey="income" fill="#10b981" radius={[6, 6, 0, 0]} barSize={20} />
+                  <Bar dataKey="expense" fill="#f43f5e" radius={[6, 6, 0, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -176,7 +192,6 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
             )}
           </div>
 
-          {/* Monthly Stats Summary below chart */}
           {monthlyData.length > 0 && (
             <div className="mt-8 space-y-3">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-slate-800 pb-2">Recent Monthly Pulse</p>
@@ -202,16 +217,66 @@ const Reports: React.FC<ReportsProps> = ({ transactions, locale }) => {
         </div>
       </div>
 
+      {/* Income Details Table (requested additional details) */}
+      {incomeData.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] shadow-sm border border-gray-50 dark:border-slate-800 animate-in slide-in-from-bottom-5 duration-700">
+           <h3 className="text-lg font-black text-gray-800 dark:text-slate-200 mb-6 uppercase tracking-widest flex items-center italic">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full mr-3 animate-pulse"></span>
+            Income Breakdown
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {incomeData.map((item) => (
+              <div key={item.name} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-transparent hover:border-emerald-200 transition-all">
+                <div className="flex items-center space-x-3">
+                   <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: item.color }}>
+                      {CATEGORIES.INCOME.find(c => c.name === item.name)?.icon || <i className="fas fa-tag"></i>}
+                   </div>
+                   <span className="text-sm font-black text-gray-700 dark:text-slate-200 uppercase tracking-tighter">{item.name}</span>
+                </div>
+                <div className="text-right">
+                   <p className="text-sm font-black text-emerald-600">{strings.currency}{item.value.toLocaleString()}</p>
+                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                     {((item.value / (totalIncome || 1)) * 100).toFixed(0)}%
+                   </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; }
-          main { padding: 0 !important; overflow: visible !important; }
+          body { 
+            background: white !important; 
+            color: black !important; 
+            -webkit-print-color-adjust: exact; 
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          main { 
+            padding: 20px !important; 
+            overflow: visible !important; 
+            background: white !important;
+          }
           .print-header { display: block !important; }
-          .rounded-[3rem] { border-radius: 12px !important; box-shadow: none !important; border: 1px solid #eee !important; margin-bottom: 20px; }
-          .grid { display: block !important; }
-          .grid > div { margin-bottom: 30px !important; page-break-inside: avoid; }
+          .rounded-[3rem] { 
+            border-radius: 20px !important; 
+            box-shadow: none !important; 
+            border: 1px solid #ddd !important; 
+            margin-bottom: 25px; 
+            page-break-inside: avoid;
+          }
+          .grid { 
+            display: grid !important; 
+            grid-template-columns: 1fr 1fr !important;
+            gap: 20px !important;
+          }
           .dark { background: white !important; }
+          aside, nav { display: none !important; }
+          header { display: none !important; }
+          #root { width: 100% !important; margin: 0 !important; padding: 0 !important; }
         }
       `}</style>
     </div>
